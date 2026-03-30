@@ -1,6 +1,6 @@
 # MotoCaz
 
-Projet web de gestion et de vente de voitures réalisé lors de mon stage d’initiation.
+Projet web de gestion et de vente des motos réalisé lors de mon stage d’initiation.
 
 ## Description
 
