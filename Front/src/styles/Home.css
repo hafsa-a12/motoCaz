@@ -1,0 +1,70 @@
+.hero {
+  text-align: center;
+  padding: 3rem 2rem;
+  background-color: #333;
+  color: white;
+}
+
+.hero button {
+  margin-top: 20px;
+  background-color: #555;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.hero button:hover {
+  background-color: #777;
+}
+
+.filtre {
+  padding: 2rem;
+  background: #ffffff;
+  margin: 2rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.filtre form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filtre select,
+.filtre input,
+.filtre button {
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filtre button {
+  background-color: #333;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.filtre button:hover {
+  background-color: #555;
+}
+
+.annonce-card {
+  background: white;
+  border: 1px solid #ddd;
+  margin: 1rem;
+  padding: 1.2rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.annonce-card:hover {
+  transform: translateY(-3px);
+}

@@ -1,0 +1,6 @@
+@echo off
+echo [1/2] Lancement du serveur backend...
+start cmd /k "cd backend && npm start"
+timeout /t 3 > nul
+echo [2/2] Lancement du site Front...
+start cmd /k "cd Front && npm run dev"
