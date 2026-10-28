@@ -1,5 +1,8 @@
 import { Check, Trash, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { photoUrl } from '../lib/media';
+import { API_BASE } from '../lib/config';
+import Pagination from '../components/Pagination';
 
 interface Annonce {
   _id: string;
@@ -8,143 +11,130 @@ interface Annonce {
   type: string;
   prix: number;
   energie: string;
-  modele?: string;
   ville: string;
-  datePublication?: string;
   photos?: string[];
-  statut: 'en attente'|'validee'|'rejete'
+  statut: 'en attente' | 'validee' | 'rejete';
+  userId?: { nom?: string; prenom?: string; email?: string } | null;
 }
 
-const API_BASE = "http://localhost:8000";
+const STATUTS = [
+  { value: 'en attente', label: 'En attente' },
+  { value: 'validee', label: 'Validées' },
+  { value: 'rejete', label: 'Rejetées' },
+  { value: '', label: 'Toutes' },
+];
+
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } : {};
 }
+
+function getStatutBadge(statut: string) {
+  switch (statut) {
+    case "rejete": return "mc-badge mc-badge--bad";
+    case "validee": return "mc-badge mc-badge--ok";
+    default: return "mc-badge mc-badge--pending";
+  }
+}
+
 function AdminDashboard() {
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
-
-  const token = localStorage.getItem("token");
-
+  const [statut, setStatut] = useState('en attente');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-     loadData()
-    }, []);
-
-  const loadData = async () => {
-    console.log("Is this called")
+  // Le back-office utilise /api/admin/annonces : il liste TOUS les statuts (la liste publique, elle, ne montre que les annonces validées)
+  const loadData = useCallback(async () => {
     try {
-      setLoading(true)
-
-      const result = await fetch(`${API_BASE}/api/annonces?page=${page}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await result.json()
-      console.log(data)
-      setAnnonces(data?.items || []);
-      setTotalPages(data.totalPages);
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams({ page: String(page) });
+      if (statut) params.set('statut', statut);
+      const res = await fetch(`${API_BASE}/api/admin/annonces?${params}`, { headers: getAuthHeaders() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message ?? `Erreur ${res.status}`);
+      setAnnonces(data.items ?? []);
+      setTotalPages(data.totalPages ?? 1);
     } catch (e) {
-        setError(e instanceof Error ? e.message : "Erreur inconnue");
-        console.error("Erreur suppression :", e);
+      setError(e instanceof Error ? e.message : "Erreur inconnue");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  };
+  }, [page, statut]);
 
-  const handleDelete = async (id: string) => {
-    try {
-      const result = await fetch(`${API_BASE}/api/annonces/byAdmin/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      });
-      await result.json()
-      loadData()
-    } catch (e) {
-        setError(e instanceof Error ? e.message : "Erreur inconnue");
-        console.error("Erreur suppression :", e);
+  useEffect(() => { loadData(); }, [loadData]);
+
+  const act = async (url: string, method: 'PUT' | 'DELETE', confirmMsg?: string) => {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    const res = await fetch(`${API_BASE}${url}`, { method, headers: getAuthHeaders() });
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      alert(data?.message ?? "Action impossible");
     }
-  };
-
-  if (loading) return <p>Chargement…</p>;
-  if (error) return <p>Erreur : {error}</p>;
-
-  const validerAnnonce = async (id: string) => {
-    const result = await fetch(`${API_BASE}/api/admin/annonces/${id}/valider`, {
-      method: "PUT",
-      headers: getAuthHeaders()
-    });
-    const data = await result.json()
-    console.log(data)
-    if(!result.ok)
-    {
-      alert(data?.["message"] ?? "Could not do action")
-    }
-
-    loadData();
-  };
-  const rejeterAnnonce = async (id: string) => {
-    const result = await fetch(`${API_BASE}/api/admin/annonces/${id}/rejeter`, {
-      method: "PUT",
-      headers: getAuthHeaders()
-    });
-    const data = await result.json()
-    console.log(data)
-    if(!result.ok)
-    {
-      alert(data?.["message"] ?? "Could not do action")
-    }
-
     loadData();
   };
 
-  function getStatutColor(statut: string) {
-    switch (statut){
-      case "rejete":
-        return "bg-[#9f0712]";
-      case "validee":
-        return "bg-[#03d3b9]";
-      default:
-        return "bg-[#3b3b3f]";
-    }
-  }
+  const validerAnnonce = (id: string) => act(`/api/admin/annonces/${id}/valider`, 'PUT');
+  const rejeterAnnonce = (id: string) => act(`/api/admin/annonces/${id}/rejeter`, 'PUT');
+  const handleDelete = (id: string) => act(`/api/annonces/byAdmin/${id}`, 'DELETE', "Supprimer définitivement cette annonce ?");
 
   return (
     <div>
-      <div className="text-2xl font-bold mb-6 flex gap-x-4 items-center">Gestion des annonces</div>
-      <div className="annonces-grid grid gap-x-4 w-full
-                grid-cols-[repeat(auto-fit,minmax(500px,600px))]">
-        {annonces.length === 0 ? (
-          <p>Aucune annonce trouvée pour ce client.</p>
-        ) : (annonces?.map((a) => (
-          <div key={a._id} className="annonce-card flex gap-x-3 max-w-[500px] min-w-[600px] h-[320px]">
-              {a.photos?.[0] && (
-                <img src={`${API_BASE}${a.photos[0]}`} alt={a.titre} className="annonce-thumb max-w-[250px] max-h-full object-contain" />
-              )}
-            <div className='flex-col relative w-full'>
-              <h3>{a.titre}</h3>
-              <div className="text-white border-[#128b9b] bg-[#7ebdc5] border-2 w-fit p-1 rounded-lg">{a.prix} DH</div>
-              <p className='text-gray-700 font-[600]'>{a.type} - {a.energie} - {a.ville}</p>
-              {a.description && <div className='max-w-[280px] break-words overflow-ellipsis line-clamp-4'>{a.description}</div>}
-              <div className='flex gap-x-3 absolute bottom-0 mt-5 w-full max-w-[200px] justify-end right-0'>
-              {a.statut=="en attente" && <button className='text-white' onClick={()=>validerAnnonce(a._id)}><Check/></button>}
-              {a.statut=="en attente" && <button className='text-white' onClick={()=>rejeterAnnonce(a._id)}><X/></button>}
-              <button className='text-white' onClick={() => handleDelete(a._id)}><Trash/></button>
-            </div>
-              <div className={"absolute top-0 right-0 rounded p-1 text-white "+getStatutColor(a.statut)}>{a.statut}</div>
+      <p className="mc-eyebrow mb-2">Back-office</p>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <h2 className="text-2xl">Gestion des annonces</h2>
+        <select
+          className="mc-field"
+          style={{ width: 200 }}
+          value={statut}
+          onChange={(e) => { setStatut(e.target.value); setPage(1); }}
+          aria-label="Filtrer par statut"
+        >
+          {STATUTS.map((s) => <option key={s.label} value={s.value}>{s.label}</option>)}
+        </select>
+      </div>
+
+      {error && <p className="text-[var(--color-danger)] text-sm mb-4">Erreur : {error}</p>}
+      {loading && <p className="text-[var(--color-mute)] text-sm">Chargement…</p>}
+
+      {!loading && !error && annonces.length === 0 && <div className="mc-empty">Aucune annonce dans cette catégorie.</div>}
+
+      <div className="mc-listing-grid">
+        {annonces.map((a) => (
+          <div key={a._id} className="mc-listing-card">
+            {a.photos?.[0] ? (
+              <img src={photoUrl(a.photos[0])} alt={a.titre} className="mc-listing-photo" />
+            ) : (
+              <div className="mc-listing-photo--empty">Aucune photo</div>
+            )}
+            <div className="mc-listing-body">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="mc-listing-title">{a.titre}</h3>
+                <span className={getStatutBadge(a.statut)}>{a.statut}</span>
+              </div>
+              <p className="mc-listing-meta">{a.type} · {a.energie} · {a.ville}</p>
+              {a.userId?.email && <p className="mc-listing-meta">Vendeur : {a.userId.prenom} {a.userId.nom} ({a.userId.email})</p>}
+              {a.description && <div className="mc-listing-desc">{a.description}</div>}
+              <div className="mc-listing-foot">
+                <span className="mc-plate">{a.prix.toLocaleString('fr-FR')} <small>DH</small></span>
+                <div className="flex gap-1">
+                  {a.statut !== "validee" && (
+                    <button className="btn btn-outline btn-icon" onClick={() => validerAnnonce(a._id)} title="Valider"><Check size={16} /></button>
+                  )}
+                  {a.statut !== "rejete" && (
+                    <button className="btn btn-outline btn-icon" onClick={() => rejeterAnnonce(a._id)} title="Rejeter"><X size={16} /></button>
+                  )}
+                  <button className="btn btn-danger btn-icon" onClick={() => handleDelete(a._id)} title="Supprimer"><Trash size={16} /></button>
+                </div>
+              </div>
             </div>
           </div>
-        )))}
+        ))}
       </div>
-      {/* Pagination */}
-        <div className="pagination">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>← Précédent</button>
-          <span>  Page {page} / {totalPages}  </span>
-          <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Suivant →</button>
-        </div>
+
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
     </div>
   );
 }

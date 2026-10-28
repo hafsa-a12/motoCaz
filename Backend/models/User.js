@@ -1,46 +1,39 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema(
   {
-    nom: { type: String, required: true },
-    prenom: { type: String, required: true },
-    email: { type: String, required: true, unique: true, index: true },
-    telephone: { type: String },
-    ville: { type: String },
-    dateNaissance: { type: Date},
+    nom: { type: String, required: true, trim: true },
+    prenom: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, index: true, lowercase: true, trim: true },
+    telephone: { type: String, trim: true },
+    ville: { type: String, trim: true },
+    dateNaissance: { type: Date },
     motDePasse: { type: String, required: true },
-    pieceIdentite: { type: String }, // chemin/nom de fichier
-
-    // ✅ rôles gérés côté back-office
-    role: {
-      type: String,
-      enum: ["client", "admin", "superadmin"],
-      default: "client",
-    },
-    // optionnel : bloquer un compte client
+    pieceIdentite: { type: String }, // nom du fichier dans uploads/piecesIdentite (privé)
+    role: { type: String, enum: ['client', 'admin', 'superadmin'], default: 'client' },
     blocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-// Hash du mot de passe si modifié
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("motDePasse")) return next();
-  this.motDePasse = await bcrypt.hash(this.motDePasse, 10);
-  next();
+// Le mot de passe est haché ICI, et seulement ici (jamais dans les routes)
+userSchema.pre('save', async function () {
+  if (this.isModified('motDePasse')) {
+    this.motDePasse = await bcrypt.hash(this.motDePasse, 10);
+  }
 });
 
-// Méthode utilitaire pour comparer
 userSchema.methods.comparePassword = function (plain) {
   return bcrypt.compare(plain, this.motDePasse);
 };
 
-// Ne jamais renvoyer le mot de passe dans les réponses JSON
+// Ne jamais renvoyer le mot de passe ni le chemin de la pièce d'identité dans les réponses JSON
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.motDePasse;
+  delete obj.pieceIdentite;
   return obj;
 };
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model('User', userSchema);

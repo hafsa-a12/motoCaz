@@ -1,6 +1,8 @@
 import { Pen, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
+import { photoUrl } from '../lib/media';
+import { API_BASE } from '../lib/config';
 
 interface Annonce {
   _id: string;
@@ -9,21 +11,22 @@ interface Annonce {
   type: string;
   prix: number;
   energie: string;
+  marque?: string;
   modele?: string;
+  etat?: string;
   ville: string;
   datePublication?: string;
   photos?: string[];
 }
 
-const API_BASE = 'http://localhost:8000';
 
 const MesAnnonces = () => {
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
   const [editAnnonce, setEditAnnonce] = useState<Annonce | null>(null);
 
-  const token = localStorage.getItem('token'); // ✅ MODIF : utiliser token
+  const token = localStorage.getItem('token');
 
-  async function refetch(){
+  async function refetch() {
     fetch(`${API_BASE}/api/annonces/miennes`, { headers: { authorization: `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => setAnnonces(data))
@@ -32,11 +35,12 @@ const MesAnnonces = () => {
   useEffect(() => {
     if (!token) return;
     refetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleDelete = async (id: string) => {
     try {
-      await fetch(`http://localhost:8000/api/annonces/${id}`, {
+      await fetch(`${API_BASE}/api/annonces/${id}`, {
         method: 'DELETE',
         headers: { authorization: `Bearer ${token}` }
       });
@@ -61,17 +65,15 @@ const MesAnnonces = () => {
     if (!editAnnonce) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/annonces/${editAnnonce._id}`, {
+      await fetch(`${API_BASE}/api/annonces/${editAnnonce._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` // ✅ MODIF
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(editAnnonce),
       });
       refetch()
-      // const data = await res.json();
-      // setAnnonces(prev => prev.map(a => a._id === data.annonce._id ? data.annonce : a));
       setEditAnnonce(null);
     } catch (err) {
       console.error("Erreur modification :", err);
@@ -79,56 +81,88 @@ const MesAnnonces = () => {
   };
 
   return (
-    <div>
-      <h2>📋 Mes Annonces</h2>
+    <div className="mc-shell py-10">
+      <p className="mc-eyebrow mb-2">Espace vendeur</p>
+      <h2 className="text-2xl mb-8">Mes annonces</h2>
 
       {editAnnonce && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: "2rem" ,marginLeft:"20px"}}>
-          <h3>Modifier l’annonce</h3>
-          <div className='flex w-full gap-x-2'>
-            <input className="bg-white border-2 rounded-lg p-2" type="text" name="titre" value={editAnnonce.titre} onChange={handleChange} required />
-            <input className="bg-white border-2 rounded-lg p-2" type="number" name="prix" value={editAnnonce.prix} onChange={handleChange} required />
-            <input className="bg-white border-2 rounded-lg p-2" type="text" name="description" value={editAnnonce.description} onChange={handleChange} />
-          
-          <select className="bg-white border-2 rounded-lg p-2" name="type" value={editAnnonce.type} onChange={handleChange}>
-            <option value="moto">Moto</option>
-            <option value="scooter">Scooter</option>
-          </select>
-
-          <select className="bg-white border-2 rounded-lg p-2" name="energie" value={editAnnonce.energie} onChange={handleChange}>
-            <option value="essence">Essence</option>
-            <option value="electrique">Électrique</option>
-          </select>
-
-          <button className="text-white" type="submit">💾 Enregistrer</button>
-          <button className="text-white" type="button" onClick={() => setEditAnnonce(null)}>❌ Annuler</button>
+        <form onSubmit={handleSubmit} className="mc-panel mb-8">
+          <h3 className="text-lg mb-4 text-[var(--color-text)]">Modifier l'annonce</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="mc-label">Titre</label>
+              <input className="mc-field" type="text" name="titre" value={editAnnonce.titre} onChange={handleChange} required />
+            </div>
+            <div>
+              <label className="mc-label">Prix (DH)</label>
+              <input className="mc-field" type="number" name="prix" value={editAnnonce.prix} onChange={handleChange} required />
+            </div>
+            <div>
+              <label className="mc-label">Description</label>
+              <input className="mc-field" type="text" name="description" value={editAnnonce.description} onChange={handleChange} />
+            </div>
+            <div>
+              <label className="mc-label">Type</label>
+              <select className="mc-field" name="type" value={editAnnonce.type} onChange={handleChange}>
+                <option value="Moto">Moto</option>
+                <option value="Scooter">Scooter</option>
+              </select>
+            </div>
+            <div>
+              <label className="mc-label">Marque</label>
+              <input className="mc-field" type="text" name="marque" value={editAnnonce.marque ?? ''} onChange={handleChange} />
+            </div>
+            <div>
+              <label className="mc-label">État</label>
+              <select className="mc-field" name="etat" value={editAnnonce.etat ?? 'occasion'} onChange={handleChange}>
+                <option value="occasion">Occasion</option>
+                <option value="neuve">Neuve</option>
+              </select>
+            </div>
+            <div>
+              <label className="mc-label">Énergie</label>
+              <select className="mc-field" name="energie" value={editAnnonce.energie} onChange={handleChange}>
+                <option value="Essence">Essence</option>
+                <option value="Electrique">Électrique</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button className="btn btn-primary" type="submit">Enregistrer</button>
+            <button className="btn btn-outline" type="button" onClick={() => setEditAnnonce(null)}>Annuler</button>
           </div>
         </form>
       )}
 
-      <div className="annonces-grid grid gap-4 w-full
-                grid-cols-[repeat(auto-fit,minmax(600px,1fr))]">
-        {annonces.map((a) => (
-          <div key={a._id} className="annonce-card flex gap-x-3 max-w-[700px] min-w-[600px] h-[320px]">
-              {a.photos?.[0] && (
-                <img src={`${API_BASE}${a.photos[0]}`} alt={a.titre} className="annonce-thumb max-w-[250px] max-h-full object-contain" />
+      {annonces.length === 0 ? (
+        <div className="mc-empty">Vous n'avez publié aucune annonce pour l'instant.</div>
+      ) : (
+        <div className="mc-listing-grid">
+          {annonces.map((a) => (
+            <div key={a._id} className="mc-listing-card">
+              {a.photos?.[0] ? (
+                <img src={photoUrl(a.photos[0])} alt={a.titre} className="mc-listing-photo" />
+              ) : (
+                <div className="mc-listing-photo--empty">Aucune photo</div>
               )}
-            <div className='flex-col relative w-full'>
-              <h3>{a.titre}</h3>
-              <div className="text-white border-[#128b9b] bg-[#7ebdc5] border-2 w-fit p-1 rounded-lg">{a.prix} DH</div>
-              <p className='text-gray-700 font-[600]'>{a.type} - {a.energie} - {a.ville}</p>
-              {a.description && <div className='max-w-[280px] break-words overflow-ellipsis line-clamp-4'>{a.description}</div>}
-              <div className='flex gap-x-5 absolute bottom-0 mt-5 w-full max-w-[200px]'>
-              <button className='text-white flex items-center gap-x-2 flex-1 justify-center' onClick={() => handleEditClick(a)}><Pen/> Modifier</button>
-              <button className='text-white flex items-center gap-x-2 flex-1 justify-center' onClick={() => handleDelete(a._id)}><Trash/> Supprimer</button>
+              <div className="mc-listing-body">
+                <h3 className="mc-listing-title">{a.titre}</h3>
+                <p className="mc-listing-meta">{a.type} · {a.energie} · {a.ville}</p>
+                {a.description && <div className="mc-listing-desc">{a.description}</div>}
+                <div className="mc-listing-foot">
+                  <span className="mc-plate">{a.prix.toLocaleString('fr-FR')} <small>DH</small></span>
+                  <div className="flex gap-1">
+                    <button className="btn btn-ghost btn-icon" onClick={() => handleEditClick(a)} title="Modifier"><Pen size={16} /></button>
+                    <button className="btn btn-danger btn-icon" onClick={() => handleDelete(a._id)} title="Supprimer"><Trash size={16} /></button>
+                  </div>
+                </div>
+              </div>
             </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
 export default MesAnnonces;
-

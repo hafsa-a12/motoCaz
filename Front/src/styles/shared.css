@@ -1,0 +1,156 @@
+/* ============================================================
+   Composants partagés : boutons, formulaires, cartes, tableaux...
+   Nécessite theme-colors.css (variables de couleurs et d'arrondis).
+   ============================================================ */
+
+/* ---------- Boutons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font-family: var(--font-body); font-weight: 700; font-size: 0.9rem;
+  padding: 0.7rem 1.35rem; border-radius: var(--radius-control); border: 1.5px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn:focus-visible,
+.pagination button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.btn-primary { background: var(--color-primary); color: #fff; box-shadow: 0 6px 16px -8px rgba(var(--primary-rgb), .75); }
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-dark); }
+
+.btn-outline { background: transparent; color: var(--color-text); border-color: var(--color-line); }
+.btn-outline:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary-ink); }
+
+.btn-ghost { background: transparent; color: var(--color-mute); padding: 0.55rem 0.85rem; }
+.btn-ghost:hover:not(:disabled) { color: var(--color-primary-ink); background: var(--color-primary-soft); }
+
+.btn-danger { background: transparent; color: var(--color-danger); border-color: rgba(var(--danger-rgb), .35); }
+.btn-danger:hover:not(:disabled) { background: rgba(var(--danger-rgb), .08); border-color: var(--color-danger); }
+
+.btn-icon { padding: 0.5rem; border-radius: 9px; }
+
+/* ---------- Surfaces ---------- */
+.mc-card, .mc-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px rgba(var(--navy-rgb), .05);
+}
+.mc-panel { padding: 1.6rem; }
+
+/* ---------- Formulaires ---------- */
+
+/* Libellés en minuscules (plus lisibles que les capitales espacées) */
+.mc-label {
+  display: block; margin-bottom: .4rem;
+  font-size: .82rem; font-weight: 600; color: var(--color-mute);
+}
+
+.mc-file {
+  width: 100%; padding: .6rem .9rem; background: var(--color-bg-soft);
+  border: 1.5px dashed var(--color-line); border-radius: var(--radius-control); color: var(--color-mute); font-size: .85rem;
+}
+.mc-file::file-selector-button {
+  margin-right: .75rem; padding: .4rem .85rem; border-radius: 8px; border: 1px solid var(--color-line);
+  background: var(--color-surface); color: var(--color-text); font-family: var(--font-body); font-weight: 600; cursor: pointer;
+}
+
+/* ---------- Pages d'authentification / formulaires ---------- */
+.mc-auth-page {
+  min-height: calc(100vh - 72px); display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem;
+  background:
+    radial-gradient(700px 300px at 85% 0%, rgba(var(--primary-rgb), .12), transparent 60%),
+    radial-gradient(600px 300px at 0% 100%, rgba(var(--gold-rgb), .12), transparent 60%);
+}
+.mc-auth-card {
+  width: 100%; max-width: 460px; padding: 2.4rem 2.2rem;
+  background: var(--color-surface); border: 1px solid var(--color-line-soft); border-radius: var(--radius-hero);
+  box-shadow: 0 24px 48px -28px rgba(var(--navy-rgb), .4); position: relative; overflow: hidden;
+}
+.mc-auth-card::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-gold));
+}
+.mc-auth-card--wide { max-width: 640px; }
+.mc-auth-title { font-size: 1.7rem; margin-bottom: .35rem; }
+.mc-auth-sub { font-size: .9rem; color: var(--color-mute); margin-bottom: 1.7rem; }
+.mc-auth-form { display: flex; flex-direction: column; gap: 1.05rem; }
+.mc-auth-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.05rem; }
+.mc-auth-msg { margin-top: 1.2rem; text-align: center; font-size: .88rem; color: var(--color-mute); }
+.mc-auth-foot { margin-top: 1.5rem; text-align: center; font-size: .86rem; color: var(--color-mute); }
+.mc-auth-foot a { color: var(--color-primary-ink); font-weight: 700; }
+.mc-auth-foot a:hover { text-decoration: underline; }
+@media (max-width: 560px) { .mc-auth-row { grid-template-columns: 1fr; } }
+
+/* ---------- Prix & badges ---------- */
+.mc-plate {
+  display: inline-flex; align-items: baseline; gap: .3rem;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; color: var(--color-primary-ink);
+}
+.mc-plate small { font-family: var(--font-body); font-size: .74rem; font-weight: 700; letter-spacing: .02em; }
+.mc-plate--lg { font-size: 1.7rem; }
+
+.mc-badge {
+  display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .65rem; border-radius: 999px;
+  font-size: .76rem; font-weight: 700;
+  border: 1px solid var(--color-line); color: var(--color-mute); background: var(--color-surface-2);
+}
+.mc-badge--pending { color: var(--color-gold-dark); border-color: rgba(var(--gold-rgb), .5); background: rgba(var(--gold-rgb), .14); }
+.mc-badge--ok { color: var(--color-ok); border-color: rgba(var(--ok-rgb), .35); background: rgba(var(--ok-rgb), .09); }
+.mc-badge--bad { color: var(--color-danger); border-color: rgba(var(--danger-rgb), .35); background: rgba(var(--danger-rgb), .08); }
+
+/* ---------- Cartes « gestion » (mes annonces, admin) ---------- */
+.mc-listing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+.mc-listing-card {
+  display: flex; flex-direction: column; overflow: hidden; background: var(--color-surface);
+  border: 1px solid var(--color-line-soft); border-radius: var(--radius-card);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.mc-listing-card:hover { border-color: var(--color-primary); box-shadow: 0 16px 30px -22px rgba(var(--navy-rgb), .55); }
+.mc-listing-photo { width: 100%; height: 190px; object-fit: cover; display: block; background: var(--color-surface-2); }
+.mc-listing-photo--empty {
+  height: 190px; display: flex; align-items: center; justify-content: center; color: var(--color-mute-2); font-size: .8rem;
+  background: repeating-linear-gradient(45deg, var(--color-bg-soft), var(--color-bg-soft) 10px, var(--color-surface-2) 10px, var(--color-surface-2) 20px);
+}
+.mc-listing-body { display: flex; flex-direction: column; gap: .55rem; padding: 1.05rem 1.15rem 1.2rem; flex: 1; }
+.mc-listing-title { font-size: 1.05rem; line-height: 1.25; }
+.mc-listing-meta { font-size: .82rem; font-weight: 600; color: var(--color-mute); margin: 0; }
+.mc-listing-desc { font-size: .86rem; color: var(--color-mute); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mc-listing-foot { margin-top: auto; padding-top: .6rem; border-top: 1px solid var(--color-line-soft); display: flex; align-items: center; justify-content: space-between; }
+
+/* ---------- Tableaux (admin) ---------- */
+.mc-table-wrap { border: 1px solid var(--color-line-soft); border-radius: var(--radius-card); overflow: hidden; background: var(--color-surface); }
+.mc-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.mc-table thead { background: var(--color-surface-2); }
+.mc-table th { text-align: left; padding: .85rem 1rem; font-size: .8rem; font-weight: 700; color: var(--color-mute); border-bottom: 1px solid var(--color-line-soft); }
+.mc-table td { padding: .8rem 1rem; border-bottom: 1px solid var(--color-line-soft); vertical-align: middle; }
+.mc-table tbody tr { transition: background-color .15s ease; }
+.mc-table tbody tr:hover { background: var(--color-bg-soft); }
+.mc-table tbody tr:last-child td { border-bottom: none; }
+
+/* ---------- Divers ---------- */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 2.2rem 0; font-size: .85rem; font-weight: 600; color: var(--color-mute); }
+.pagination button { background: var(--color-surface); border: 1.5px solid var(--color-line); color: var(--color-text); padding: .5rem 1rem; border-radius: var(--radius-control); cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: .85rem; transition: border-color .15s ease, color .15s ease; }
+.pagination button:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary-ink); }
+.pagination button:disabled { opacity: .4; cursor: not-allowed; }
+
+.mc-empty { text-align: center; padding: 3.5rem 1.5rem; color: var(--color-mute); font-size: .92rem; border: 1.5px dashed var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
+
+
+/* ---------- Logo (utilisé dans le pied de page) ---------- */
+.brand { display: flex; align-items: center; gap: .65rem; }
+.brand__mark { width: 38px; height: 38px; border-radius: 11px; background: var(--color-primary); color: #fff; display: grid; place-items: center; }
+.brand__name { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: .02em; color: #fff; }
+.brand__name span { color: var(--color-accent-light); }
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--color-navy); color: rgba(255,255,255,.68); margin-top: 4rem; }
+.site-footer__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 2rem 1.5rem; font-size: .85rem; }
+.site-footer .brand__name { font-size: 1.1rem; }
+
+/* ---------- Accessibilité : respecte « réduire les animations » ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .btn:active { transform: none; }
+}

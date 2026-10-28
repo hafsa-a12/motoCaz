@@ -1,6 +1,8 @@
 import { ArrowLeftCircleIcon, Check, Trash, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams} from 'react-router-dom';
+import { photoUrl } from '../lib/media';
+import { API_BASE } from '../lib/config';
 
 interface Annonce {
   _id: string;
@@ -27,7 +29,6 @@ interface Client {
   blocked:boolean;
 }
 
-const API_BASE = "http://localhost:8000";
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");
@@ -37,15 +38,12 @@ function getAuthHeaders(): Record<string, string> {
 const AdminClientsDetails: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  let preloadedClient = location.state?.c;
   const [selectedClient, setSelectedClient] = useState<Client>();
   const [annonces, setAnnonces] = useState<Annonce[]>([]);
-  
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Charger tous les clients
   const fetchClient = async () => {
     try {
       setLoading(true);
@@ -64,11 +62,9 @@ const AdminClientsDetails: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if(preloadedClient !=null || preloadedClient != undefined){
-      fetchClient();
-    }
-  }, []);
+  // Charge toujours le client depuis l'API (le lien reste valable après un rafraîchissement de la page)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchClient(); }, [id]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -87,8 +83,8 @@ const AdminClientsDetails: React.FC = () => {
     }
   };
 
-  if (loading) return <p>Chargement…</p>;
-  if (error) return <p>Erreur : {error}</p>;
+  if (loading) return <p className="text-[var(--color-mute)]  text-sm">Chargement…</p>;
+  if (error) return <p className="text-[var(--color-danger)]  text-sm">Erreur : {error}</p>;
 
   const validerAnnonce = async (id: string) => {
     const result = await fetch(`${API_BASE}/api/admin/annonces/${id}/valider`, {
@@ -117,57 +113,78 @@ const AdminClientsDetails: React.FC = () => {
     fetchClient();
   };
 
-  function getStatutColor(statut: string) {
-    switch (statut){
+  function getStatutBadge(statut: string) {
+    switch (statut) {
       case "rejete":
-        return "bg-[#9f0712]";
+        return "mc-badge mc-badge--bad";
       case "validee":
-        return "bg-[#03d3b9]";
+        return "mc-badge mc-badge--ok";
       default:
-        return "bg-[#3b3b3f]";
+        return "mc-badge mc-badge--pending";
     }
   }
 
   return (
     <div>
-      <div className="text-2xl font-bold mb-6 flex gap-x-4 items-center"><ArrowLeftCircleIcon size={29} className="cursor-pointer" onClick={()=>navigate(-1)}/> <span>{selectedClient?.prenom} {selectedClient?.nom}</span></div>
-      <ul className="list-disc space-y-2 [&>li]:text-lg bg-white p-5 rounded-lg shadow-md mb-6 pl-10">
-        <li><strong>NOM:</strong> {selectedClient?.nom}</li>
-        <li><strong>PRENOM:</strong> {selectedClient?.prenom}</li>
-        <li><strong>EMAIL:</strong> {selectedClient?.email}</li>
-        <li><strong>TELEPHONE:</strong> {selectedClient?.telephone}</li>
-        <li><strong>VILLE:</strong> {selectedClient?.ville}</li>
-        <li><strong>DATE DE NAISSANCE:</strong> {selectedClient?.dateNaissance?formatDateTime(selectedClient?.dateNaissance):"-"}</li>
-        <li><strong>BLOQUÉ:</strong> {selectedClient?.blocked ? (
-                      <span className="text-red-600 font-semibold">Oui</span>
-                    ) : (
-                      <span className="text-green-600 font-semibold">Non</span>
-                    )}</li>
-      </ul>
-      <div className="annonces-grid grid gap-x-4 w-full
-                grid-cols-[repeat(auto-fit,minmax(500px,600px))]">
-        {annonces.length === 0 ? (
-          <p>Aucune annonce trouvée pour ce client.</p>
-        ) : (annonces.map((a) => (
-          <div key={a._id} className="annonce-card flex gap-x-3 max-w-[500px] min-w-[600px] h-[320px]">
-              {a.photos?.[0] && (
-                <img src={`${API_BASE}${a.photos[0]}`} alt={a.titre} className="annonce-thumb max-w-[250px] max-h-full object-contain" />
-              )}
-            <div className='flex-col relative w-full'>
-              <h3>{a.titre}</h3>
-              <div className="text-white border-[#128b9b] bg-[#7ebdc5] border-2 w-fit p-1 rounded-lg">{a.prix} DH</div>
-              <p className='text-gray-700 font-[600]'>{a.type} - {a.energie} - {a.ville}</p>
-              {a.description && <div className='max-w-[280px] break-words overflow-ellipsis line-clamp-4'>{a.description}</div>}
-              <div className='flex gap-x-3 absolute bottom-0 mt-5 w-full max-w-[200px] justify-end right-0'>
-              {a.statut=="en attente" && <button className='text-white' onClick={()=>validerAnnonce(a._id)}><Check/></button>}
-              {a.statut=="en attente" && <button className='text-white' onClick={()=>rejeterAnnonce(a._id)}><X/></button>}
-              <button className='text-white' onClick={() => handleDelete(a._id)}><Trash/></button>
-            </div>
-              <div className={"absolute top-0 right-0 rounded p-1 text-white "+getStatutColor(a.statut)}>{a.statut}</div>
-            </div>
-          </div>
-        )))}
+      <div className="flex items-center gap-3 mb-8">
+        <ArrowLeftCircleIcon size={26} className="cursor-pointer text-[var(--color-mute)] hover:text-[var(--color-primary-ink)] transition-colors" onClick={() => navigate(-1)} />
+        <h2 className="text-2xl">{selectedClient?.prenom} {selectedClient?.nom}</h2>
       </div>
+
+      <div className="mc-panel mb-8">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          <div><dt className="mc-label mb-1">Nom</dt><dd className="text-[var(--color-text)]">{selectedClient?.nom}</dd></div>
+          <div><dt className="mc-label mb-1">Prénom</dt><dd className="text-[var(--color-text)]">{selectedClient?.prenom}</dd></div>
+          <div><dt className="mc-label mb-1">Email</dt><dd className="text-[var(--color-text)]">{selectedClient?.email}</dd></div>
+          <div><dt className="mc-label mb-1">Téléphone</dt><dd className="text-[var(--color-text)]">{selectedClient?.telephone}</dd></div>
+          <div><dt className="mc-label mb-1">Ville</dt><dd className="text-[var(--color-text)]">{selectedClient?.ville}</dd></div>
+          <div><dt className="mc-label mb-1">Date de naissance</dt><dd className="text-[var(--color-text)]">{selectedClient?.dateNaissance ? formatDateTime(selectedClient?.dateNaissance) : "-"}</dd></div>
+          <div>
+            <dt className="mc-label mb-1">Bloqué</dt>
+            <dd>{selectedClient?.blocked ? (
+              <span className="mc-badge mc-badge--bad">Oui</span>
+            ) : (
+              <span className="mc-badge mc-badge--ok">Non</span>
+            )}</dd>
+          </div>
+        </dl>
+      </div>
+
+      {annonces.length === 0 ? (
+        <div className="mc-empty">Aucune annonce trouvée pour ce client.</div>
+      ) : (
+        <div className="mc-listing-grid">
+          {annonces.map((a) => (
+            <div key={a._id} className="mc-listing-card">
+              {a.photos?.[0] ? (
+                <img src={photoUrl(a.photos[0])} alt={a.titre} className="mc-listing-photo" />
+              ) : (
+                <div className="mc-listing-photo--empty">Aucune photo</div>
+              )}
+              <div className="mc-listing-body">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="mc-listing-title">{a.titre}</h3>
+                  <span className={getStatutBadge(a.statut)}>{a.statut}</span>
+                </div>
+                <p className="mc-listing-meta">{a.type} · {a.energie} · {a.ville}</p>
+                {a.description && <div className="mc-listing-desc">{a.description}</div>}
+                <div className="mc-listing-foot">
+                  <span className="mc-plate">{a.prix.toLocaleString('fr-FR')} <small>DH</small></span>
+                  <div className="flex gap-1">
+                    {a.statut === "en attente" && (
+                      <button className="btn btn-outline btn-icon" onClick={() => validerAnnonce(a._id)}><Check size={16} /></button>
+                    )}
+                    {a.statut === "en attente" && (
+                      <button className="btn btn-outline btn-icon" onClick={() => rejeterAnnonce(a._id)}><X size={16} /></button>
+                    )}
+                    <button className="btn btn-danger btn-icon" onClick={() => handleDelete(a._id)}><Trash size={16} /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -175,10 +192,10 @@ const AdminClientsDetails: React.FC = () => {
 const formatDateTime = (dateString:string) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-  
+
     return `${year}-${month}-${day}`;
   };
-  
+
 export default AdminClientsDetails;

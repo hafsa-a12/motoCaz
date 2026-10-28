@@ -1,99 +1,50 @@
- // controllers/admin.controller.js
+// controllers/admin.controller.js
+const mongoose = require('mongoose');
 const Annonce = require('../models/Annonce');
-const User = require("../models/User");
 
-// Lister les annonces en attente de validation
-exports.getAnnoncesEnAttente = async (req, res) => {
+const STATUTS = ['en attente', 'validee', 'rejete'];
+
+/** GET /api/admin/annonces?statut=&page=&limit= — toutes les annonces (tous statuts), plus récentes d'abord */
+exports.listerAnnonces = async (req, res) => {
   try {
-    const annonces = await Annonce.find({ statut: 'en_attente' }).populate('userId', 'nom prenom email');
-    res.json(annonces);
+    const { statut } = req.query;
+    const q = {};
+    if (statut && STATUTS.includes(statut)) q.statut = statut;
+
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 12, 1), 50);
+
+    const [items, total] = await Promise.all([
+      Annonce.find(q).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit)
+        .populate('userId', 'nom prenom email'),
+      Annonce.countDocuments(q),
+    ]);
+    res.json({ page, limit, total, totalPages: Math.ceil(total / limit), items });
   } catch (err) {
-    res.status(500).json({ message: 'Erreur serveur', error: err.message });
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-// Valider une annonce
+/** PUT /api/annonces/:id/valider  et  PUT /api/admin/annonces/:id/valider */
 exports.validerAnnonce = async (req, res) => {
   try {
-    const annonce = await Annonce.findById(req.params.id);
-    if (!annonce) return res.status(404).json({ message: 'Annonce non trouvée' });
-
-    annonce.statut = 'validée';
-    await annonce.save();
-
-    res.json({ message: 'Annonce validée avec succès', annonce });
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: 'Annonce introuvable' });
+    const annonce = await Annonce.findByIdAndUpdate(req.params.id, { statut: 'validee' }, { new: true });
+    if (!annonce) return res.status(404).json({ message: 'Annonce introuvable' });
+    res.json({ message: 'Annonce validée', annonce });
   } catch (err) {
-    res.status(500).json({ message: 'Erreur serveur', error: err.message });
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-// Refuser une annonce
+/** PUT /api/admin/annonces/:id/rejeter */
 exports.refuserAnnonce = async (req, res) => {
   try {
-    const annonce = await Annonce.findById(req.params.id);
-    if (!annonce) return res.status(404).json({ message: 'Annonce non trouvée' });
-
-    annonce.statut = 'refusée';
-    await annonce.save();
-
-    res.json({ message: 'Annonce refusée avec succès', annonce });
+    if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ message: 'Annonce introuvable' });
+    const annonce = await Annonce.findByIdAndUpdate(req.params.id, { statut: 'rejete' }, { new: true });
+    if (!annonce) return res.status(404).json({ message: 'Annonce introuvable' });
+    res.json({ message: 'Annonce rejetée', annonce });
   } catch (err) {
-    res.status(500).json({ message: 'Erreur serveur', error: err.message });
+    res.status(500).json({ message: 'Erreur serveur' });
   }
-};
-
-
-// Créer un admin
-exports.createAdmin = async (req, res) => {
-  try {
-    const { nom, email, motDePasse } = req.body;
-    const newAdmin = new User({ nom, email, motDePasse, role: "admin" });
-    await newAdmin.save();
-    res.status(201).json(newAdmin);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// Modifier le rôle
-exports.updateUserRole = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { role } = req.body;
-    const updatedUser = await User.findByIdAndUpdate(id, { role }, { new: true });
-    res.json(updatedUser);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// Supprimer un utilisateur
-exports.deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await User.findByIdAndDelete(id);
-    res.json({ message: "Utilisateur supprimé" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// Lister tous les clients
-exports.getAllClients = async (req, res) => {
-  const clients = await User.find({ role: "client" });
-  res.json(clients);
-};
-
-// Voir un client + ses annonces
-exports.getClientDetails = async (req, res) => {
-  const { id } = req.params;
-  const client = await User.findById(id);
-  const annonces = await Annonce.find({ userId: id });
-  res.json({ client, annonces });
-};
-
-// Supprimer un client
-exports.deleteClient = async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.json({ message: "Client supprimé" });
 };

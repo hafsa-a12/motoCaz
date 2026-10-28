@@ -1,31 +1,15 @@
-// routes/admin.routes.js
+// routes/admin.routes.js — back-office : modération des annonces
 const express = require('express');
-const router = express.Router();
-const Annonce = require('../models/Annonce');
 const { verifyToken, verifyAdmin } = require('../middlewares/auth');
-const isSuperAdmin = require("../middlewares/isSuperAdmin");
-const adminController = require("../controllers/admin.controller")
+const { listerAnnonces, validerAnnonce, refuserAnnonce } = require('../controllers/admin.controller');
 
-router.post("/create-admin", isSuperAdmin, adminController.createAdmin);
-router.put("/update-role/:id",  isSuperAdmin, adminController.updateUserRole);
-router.delete("/delete-user/:id",  isSuperAdmin, adminController.deleteUser);
+const router = express.Router();
 
-//  Lister annonces en attente
-router.get('/annonces-en-attente', verifyToken, verifyAdmin, async (req, res) => {
-  const annonces = await Annonce.find({ statut: 'en attente' });
-  res.json(annonces);
-});
+// Toutes les routes ci-dessous exigent un admin (ou superadmin)
+router.use(verifyToken, verifyAdmin);
 
-//  Valider annonce
-router.put('/annonces/:id/valider', verifyToken, verifyAdmin, async (req, res) => {
-  const annonce = await Annonce.findByIdAndUpdate(req.params.id, { statut: 'validee' }, { new: true });
-  res.json(annonce);
-});
-
-//  Rejeter annonce
-router.put('/annonces/:id/rejeter', verifyToken, verifyAdmin, async (req, res) => {
-  const annonce = await Annonce.findByIdAndUpdate(req.params.id, { statut: 'rejete' }, { new: true });
-  res.json(annonce);
-});
+router.get('/annonces', listerAnnonces);
+router.put('/annonces/:id/valider', validerAnnonce);
+router.put('/annonces/:id/rejeter', refuserAnnonce);
 
 module.exports = router;

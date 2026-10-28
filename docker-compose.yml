@@ -1,0 +1,15 @@
+# Lance MongoDB en local (pas besoin de l'installer) :
+#   docker compose up -d
+# puis dans Backend/.env :  MONGO_URL=mongodb://localhost:27017/motocaz
+services:
+  mongo:
+    image: mongo:7
+    container_name: motocaz-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

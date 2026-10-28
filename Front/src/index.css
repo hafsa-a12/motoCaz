@@ -1,129 +1,56 @@
 @import "tailwindcss";
+@import "./styles/base.css";
+@import "./styles/components.css";
+@import "./styles/shared.css";
+@import "./styles/home.css";
 
+/* ============================================================
+   MOTOCAZ — design tokens (source unique de vérité)
+   Bleu encre + ambre, sur fond clair bleuté.
+   Pour changer de couleur : modifie uniquement ce fichier.
+   ============================================================ */
+@theme static {
+  --color-bg: #f6f7fb;
+  --color-bg-soft: #f9faff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f3fa;
+  --color-line: #d9dde9;
+  --color-line-soft: #e6e9f2;
+
+  --color-navy: #101b3a;
+  --color-navy-2: #1b2a55;
+
+  --color-primary: #2f5fe3;
+  --color-primary-dark: #2347b8;
+  --color-primary-ink: #1d3a94;
+  --color-primary-soft: #e8eefc;
+  --color-accent-light: #a9c0ff;   /* texte/icônes clairs sur fond bleu nuit */
+  --color-mint: #dfe8ff;
+
+  --color-gold: #e9a23b;
+  --color-gold-dark: #9a6208;
+
+  --color-text: #151a2d;
+  --color-mute: #5d6783;
+  --color-mute-2: #8c96b0;
+
+  --color-ok: #1b8a5a;
+  --color-danger: #c8372d;
+
+  --font-display: "Sora", "Manrope", sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+}
+
+/* Mêmes couleurs en RGB (pour rgba(var(--primary-rgb), .2)) + arrondis.
+   À garder synchronisé avec les couleurs ci-dessus. */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --primary-rgb: 47, 95, 227;
+  --gold-rgb: 233, 162, 59;
+  --navy-rgb: 16, 27, 58;
+  --danger-rgb: 200, 55, 45;
+  --ok-rgb: 27, 138, 90;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  /* background-color: #242424; */
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-} */
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f6f6f6;
-  color: #333;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  display: block;
-    margin-block-start: 0.67em;
-    margin-block-end: 0.67em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate;
-}
-h2 {
-    display: block;
-    font-size: 1.5em;
-    margin-block-start: 0.83em;
-    margin-block-end: 0.83em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate;
-}
-h3 {
-    display: block;
-    font-size: 1.17em;
-    margin-block-start: 1em;
-    margin-block-end: 1em;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
-    font-weight: bold;
-    unicode-bidi: isolate;
-}
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:disabled{
-  background-color: #7a7a7a;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  /* a:hover {
-    color: #747bff;
-  } */
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-/* header {
-  background-color: #222;
-  color: white;
-  padding: 0.5rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-    unicode-bidi: isolate;
-  height: 50px;
-} */
-
-nav a {
-  color: white;
-  margin-left: 1rem;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-nav a:hover {
-  text-decoration: underline;
-}
-
-footer {
-  text-align: center;
-  padding: 1rem;
-  background-color: #222;
-  color: white;
-  font-size: 0.9rem;
+  --radius-control: 10px;   /* boutons, champs */
+  --radius-card: 16px;      /* cartes, tableaux, panneaux */
+  --radius-hero: 20px;      /* bandeau d'accueil, carte de connexion */
 }

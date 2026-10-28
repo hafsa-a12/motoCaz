@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Login.css';
+import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE } from '../lib/config';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/login', { // ⚠️ mets ton port backend ici
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, motDePasse }),
@@ -22,55 +22,69 @@ function Login() {
       const result = await res.json();
 
       if (res.ok) {
-        // ✅ Sauvegarder token et infos utilisateur
         localStorage.setItem('token', result.token);
         localStorage.setItem('role', result.role);
         localStorage.setItem('nom', result.nom);
         localStorage.setItem('prenom', result.prenom);
         localStorage.setItem('userId', result.userId);
 
-        setMessage('Connexion réussie ✅');
+        setMessage('Connexion réussie');
 
-        // ✅ Redirection selon rôle
         if (result.role === 'superadmin') {
-          navigate('/super-dashboard');
+          navigate('/superadmin');
         } else if (result.role === 'admin') {
-          navigate('/admin-dashboard');
+          navigate('/admin');
         } else {
           navigate('/');
         }
       } else {
-        setMessage(result.message || 'Erreur de connexion ❌');
+        setMessage(result.message || 'Erreur de connexion');
       }
     } catch (error) {
       console.error('Erreur de connexion:', error);
-      setMessage('Erreur serveur ❌');
+      setMessage('Erreur serveur');
     }
   };
 
   return (
-    <div className="login-page">
-      <h1>Connexion</h1>
+    <div className="mc-auth-page">
+      <div className="mc-auth-card">
+        <p className="mc-eyebrow mb-2">Espace membre</p>
+        <h1 className="mc-auth-title">Connexion</h1>
+        <p className="mc-auth-sub">Accédez à vos annonces et à votre compte Motocaz.</p>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
-          required
-        />
-        <button type="submit">Se connecter</button>
-      </form>
+        <form onSubmit={handleSubmit} className="mc-auth-form">
+          <div>
+            <label className="mc-label">Email</label>
+            <input
+              className="mc-field"
+              type="email"
+              placeholder="vous@exemple.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="mc-label">Mot de passe</label>
+            <input
+              className="mc-field"
+              type="password"
+              placeholder="••••••••"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="btn btn-primary w-full">Se connecter</button>
+        </form>
 
-      {message && <p>{message}</p>}
+        {message && <p className="mc-auth-msg">{message}</p>}
+
+        <p className="mc-auth-foot">
+          Pas encore de compte ? <Link to="/register">Créer un compte</Link>
+        </p>
+      </div>
     </div>
   );
 }

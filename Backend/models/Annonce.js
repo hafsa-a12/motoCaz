@@ -7,7 +7,9 @@ const AnnonceSchema = new mongoose.Schema(
     description: { type: String, required: true, trim: true },
     type: { type: String, required: true },            // "Moto" | "Scooter"
     energie: { type: String, required: true },         // "Essence" | "Electrique"
+    marque: { type: String, default: '', trim: true },
     modele: { type: String, default: '' },
+    etat: { type: String, enum: ['neuve', 'occasion'], default: 'occasion' },
     ville: { type: String, required: true, trim: true },
     prix: { type: Number, required: true, min: 0 },
     photos: { type: [String], default: [] },

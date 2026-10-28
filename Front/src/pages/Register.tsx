@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Register.css';
+import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE } from '../lib/config';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -43,7 +43,7 @@ function Register() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/register', {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         body: dataToSend,
       });
@@ -52,7 +52,7 @@ function Register() {
       setMessage(result.message || 'Inscription réussie');
 
       if (response.ok) {
-        navigate('/login'); // ✅ Redirection après succès
+        navigate('/login');
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -61,23 +61,65 @@ function Register() {
   };
 
   return (
-    <div className="register-page">
-      <h1>Créer un compte</h1>
+    <div className="mc-auth-page">
+      <div className="mc-auth-card mc-auth-card--wide">
+        <p className="mc-eyebrow mb-2">Nouveau membre</p>
+        <h1 className="mc-auth-title">Créer un compte</h1>
+        <p className="mc-auth-sub">Rejoignez Motocaz pour publier et gérer vos annonces.</p>
 
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <input type="text" name="nom" placeholder="Nom" value={formData.nom} onChange={handleChange} required />
-        <input type="text" name="prenom" placeholder="Prénom" value={formData.prenom} onChange={handleChange} required />
-        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
-        <input type="tel" name="telephone" placeholder="Téléphone" value={formData.telephone} onChange={handleChange} required />
-        <input type="text" name="ville" placeholder="Ville" value={formData.ville} onChange={handleChange} required />
-        <input type="date" name="dateNaissance" value={formData.dateNaissance} onChange={handleChange} required />
-        <input type="password" name="motDePasse" placeholder="Mot de passe" value={formData.motDePasse} onChange={handleChange} required />
-        <input type="file" name="pieceIdentite" accept="image/*,.pdf" onChange={handleFileChange} required />
+        <form onSubmit={handleSubmit} encType="multipart/form-data" className="mc-auth-form">
+          <div className="mc-auth-row">
+            <div>
+              <label className="mc-label">Nom</label>
+              <input className="mc-field" type="text" name="nom" placeholder="Nom" value={formData.nom} onChange={handleChange} required />
+            </div>
+            <div>
+              <label className="mc-label">Prénom</label>
+              <input className="mc-field" type="text" name="prenom" placeholder="Prénom" value={formData.prenom} onChange={handleChange} required />
+            </div>
+          </div>
 
-        <button type="submit">S'inscrire</button>
-      </form>
+          <div>
+            <label className="mc-label">Email</label>
+            <input className="mc-field" type="email" name="email" placeholder="vous@exemple.com" value={formData.email} onChange={handleChange} required />
+          </div>
 
-      {message && <p>{message}</p>}
+          <div className="mc-auth-row">
+            <div>
+              <label className="mc-label">Téléphone</label>
+              <input className="mc-field" type="tel" name="telephone" placeholder="Téléphone" value={formData.telephone} onChange={handleChange} required />
+            </div>
+            <div>
+              <label className="mc-label">Ville</label>
+              <input className="mc-field" type="text" name="ville" placeholder="Ville" value={formData.ville} onChange={handleChange} required />
+            </div>
+          </div>
+
+          <div className="mc-auth-row">
+            <div>
+              <label className="mc-label">Date de naissance</label>
+              <input className="mc-field" type="date" name="dateNaissance" value={formData.dateNaissance} onChange={handleChange} required />
+            </div>
+            <div>
+              <label className="mc-label">Mot de passe</label>
+              <input className="mc-field" type="password" name="motDePasse" placeholder="••••••••" value={formData.motDePasse} onChange={handleChange} required />
+            </div>
+          </div>
+
+          <div>
+            <label className="mc-label">Pièce d'identité</label>
+            <input className="mc-file" type="file" name="pieceIdentite" accept="image/*,.pdf" onChange={handleFileChange} required />
+          </div>
+
+          <button type="submit" className="btn btn-primary w-full">S'inscrire</button>
+        </form>
+
+        {message && <p className="mc-auth-msg">{message}</p>}
+
+        <p className="mc-auth-foot">
+          Déjà membre ? <Link to="/login">Se connecter</Link>
+        </p>
+      </div>
     </div>
   );
 }

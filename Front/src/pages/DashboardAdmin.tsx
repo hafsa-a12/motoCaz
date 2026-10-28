@@ -1,23 +1,42 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { ShieldCheck, Users, FileText } from 'lucide-react';
 
 export default function DashboardAdmin() {
-  const navigate = useNavigate();
-  
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-  
-    if (!token || (role !== "admin" && role !== "superadmin")) {
-      navigate("/login"); // 🚪 accès interdit
-    }
-  
-    return (
-      <div className="px-5">
-        <h2>Admin Dashboard</h2>
-        <div className='flex gap-4 [&>*]:w-100 [&>*]:h-50 flex-wrap [&>*]:rounded-2xl [&>*]:p-5 [&>*]:text-white [&>*]:font-[500] [&>*]:visited:text-white text-2xl'>
-          {role=="superadmin"&&<Link className="bg-gray-900" to="/superadmin/users">Gestion des administrateurs</Link>}
-          <Link className="bg-gray-500" to="/admin/clients">Gestion des clients</Link>
-          <Link className="bg-gray-700" to="/admin/annonces">Gestion des annonces</Link>
-        </div>
+  const location = useLocation();
+  const base = location.pathname.startsWith("/superadmin") ? "/superadmin" : "/admin";
+
+  const role = localStorage.getItem("role");
+
+
+  return (
+    <div>
+      <p className="mc-eyebrow mb-2">Back-office</p>
+      <h2 className="text-2xl mb-8">Tableau de bord</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {role === "superadmin" && (
+          <Link to="/superadmin/users" className="mc-panel flex flex-col gap-4 hover:border-[var(--color-primary-dark)] transition-colors group">
+            <ShieldCheck size={24} className="text-[var(--color-primary-ink)]" />
+            <div>
+              <h3 className="text-lg text-[var(--color-text)] mb-1">Administrateurs</h3>
+              <p className="text-sm text-[var(--color-mute)]">Gérer les comptes administrateurs</p>
+            </div>
+          </Link>
+        )}
+        <Link to={`${base}/clients`} className="mc-panel flex flex-col gap-4 hover:border-[var(--color-primary-dark)] transition-colors group">
+          <Users size={24} className="text-[var(--color-primary-ink)]" />
+          <div>
+            <h3 className="text-lg text-[var(--color-text)] mb-1">Clients</h3>
+            <p className="text-sm text-[var(--color-mute)]">Consulter et gérer les clients</p>
+          </div>
+        </Link>
+        <Link to={`${base}/annonces`} className="mc-panel flex flex-col gap-4 hover:border-[var(--color-primary-dark)] transition-colors group">
+          <FileText size={24} className="text-[var(--color-primary-ink)]" />
+          <div>
+            <h3 className="text-lg text-[var(--color-text)] mb-1">Annonces</h3>
+            <p className="text-sm text-[var(--color-mute)]">Valider, rejeter ou supprimer des annonces</p>
+          </div>
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
+}

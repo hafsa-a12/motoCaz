@@ -1,6 +1,7 @@
 import { Check, Eye, Pen, Trash, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from '../lib/config';
 
 interface Client {
   _id: string;
@@ -13,7 +14,6 @@ interface Client {
   blocked:boolean;
 }
 
-const API_BASE = "http://localhost:8000";
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");
@@ -26,10 +26,9 @@ const AdminClients: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // inline editing
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Client>>({});
-  // Charger tous les clients
+
   const fetchClients = async () => {
     try {
       setLoading(true);
@@ -51,9 +50,8 @@ const AdminClients: React.FC = () => {
     fetchClients();
   }, []);
 
-  // Supprimer un client
   const handleDeleteClient = async (id: string) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce client ? Ses annonces seront supprimées aussi! ")) return;
+    if (!window.confirm("Voulez-vous vraiment supprimer ce client ? Ses annonces seront supprimées aussi !")) return;
     try {
       const res = await fetch(`${API_BASE}/api/admin/clients/${id}`, {
         method: "DELETE",
@@ -68,7 +66,6 @@ const AdminClients: React.FC = () => {
     }
   };
 
-  // edit client confirm
   const handleEditClient = async (id: string) => {
     try {
       const res = await fetch(`${API_BASE}/api/admin/clients/${id}`, {
@@ -77,7 +74,7 @@ const AdminClients: React.FC = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message?? "Could not edit client");
+      if (!res.ok) throw new Error(data?.message ?? "Could not edit client");
       alert("Client modifié avec succès");
       setEditingClientId(null);
       setFormData({});
@@ -102,103 +99,98 @@ const AdminClients: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  if (loading) return <p>Chargement…</p>;
-  if (error) return <p>Erreur : {error}</p>;
+  if (loading) return <p className="text-[var(--color-mute)]  text-sm">Chargement…</p>;
+  if (error) return <p className="text-[var(--color-danger)]  text-sm">Erreur : {error}</p>;
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Gestion des clients</h2>
+      <p className="mc-eyebrow mb-2">Back-office</p>
+      <h2 className="text-2xl mb-8">Gestion des clients</h2>
 
       {clients.length === 0 ? (
-        <p>Aucun client.</p>
+        <div className="mc-empty">Aucun client.</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white shadow rounded-lg">
-            <thead className="bg-gray-100 text-left">
+        <div className="mc-table-wrap overflow-x-auto">
+          <table className="mc-table">
+            <thead>
               <tr>
-                <th className="px-4 py-2">Nom</th>
-                <th className="px-4 py-2">Prénom</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Téléphone</th>
-                <th className="px-4 py-2">Ville</th>
-                <th className="px-4 py-2">Date de naissance</th>
-                <th className="px-4 py-2">Bloqué</th>
-                <th className="px-4 py-2">Actions</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Ville</th>
+                <th>Naissance</th>
+                <th>Bloqué</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {clients.map((c) => {
                 const isEditing = editingClientId === c._id;
                 return (
-                  <tr key={c._id} className="border-t hover:bg-gray-50">
-                    {/* Nom */}
-                    <td className="px-4 py-2">
+                  <tr key={c._id}>
+                    <td>
                       {isEditing ? (
                         <input
                           value={formData.nom || ""}
                           onChange={(e) => handleChange("nom", e.target.value)}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         />
                       ) : (
                         c.nom
                       )}
                     </td>
-                    {/* Prenom */}
-                    <td className="px-4 py-2">
+                    <td>
                       {isEditing ? (
                         <input
                           value={formData.prenom || ""}
                           onChange={(e) => handleChange("prenom", e.target.value)}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         />
                       ) : (
                         c.prenom
                       )}
                     </td>
-                    {/* Email */}
-                    <td className="px-4 py-2">
+                    <td>
                       {isEditing ? (
                         <input
                           value={formData.email || ""}
                           onChange={(e) => handleChange("email", e.target.value)}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         />
                       ) : (
                         c.email
                       )}
                     </td>
-                    {/* Téléphone */}
-                    <td className="px-4 py-2">
+                    <td>
                       {isEditing ? (
                         <input
                           value={formData.telephone || ""}
                           onChange={(e) => handleChange("telephone", e.target.value)}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         />
                       ) : (
                         c.telephone || "-"
                       )}
                     </td>
-                    {/* Ville */}
-                    <td className="px-4 py-2">
+                    <td>
                       {isEditing ? (
                         <input
                           value={formData.ville || ""}
                           onChange={(e) => handleChange("ville", e.target.value)}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         />
                       ) : (
                         c.ville || "-"
                       )}
                     </td>
-                    {/* Date naissance */}
-                    <td className="px-4 py-2">
+                    <td>
                       {isEditing ? (
                         <input
                           type="date"
                           value={formData.dateNaissance || ""}
                           onChange={(e) => handleChange("dateNaissance", e.target.value)}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         />
                       ) : c.dateNaissance ? (
                         formatDateTime(c.dateNaissance)
@@ -206,62 +198,62 @@ const AdminClients: React.FC = () => {
                         "-"
                       )}
                     </td>
-                    {/* Blocked */}
-                    <td className="px-4 py-2">
+                    <td>
                       {isEditing ? (
                         <select
                           value={formData.blocked ? "true" : "false"}
                           onChange={(e) => handleChange("blocked", e.target.value === "true")}
-                          className="border p-1 rounded w-full"
+                          className="mc-field !py-1.5"
                         >
                           <option value="false">Non</option>
                           <option value="true">Oui</option>
                         </select>
                       ) : c.blocked ? (
-                        <span className="text-red-600 font-semibold">Oui</span>
+                        <span className="mc-badge mc-badge--bad">Oui</span>
                       ) : (
-                        <span className="text-green-600 font-semibold">Non</span>
+                        <span className="mc-badge mc-badge--ok">Non</span>
                       )}
                     </td>
-                    {/* Actions */}
-                    <td className="px-4 py-2 flex gap-2">
-                      {isEditing ? (
-                        <>
-                          <button
-                            onClick={() => handleEditClient(c._id)}
-                            className="p-2 bg-green-500 text-white rounded hover:bg-green-600"
-                          >
-                            <Check size={16} />
-                          </button>
-                          <button
-                            onClick={cancelEditing}
-                            className="p-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                          >
-                            <X size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => navigate(`/admin/clients/${c._id}`, { state: { c } })}
-                            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => startEditing(c)}
-                            className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                          >
-                            <Pen size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClient(c._id)}
-                            className="p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                          >
-                            <Trash size={16} />
-                          </button>
-                        </>
-                      )}
+                    <td>
+                      <div className="flex gap-1.5">
+                        {isEditing ? (
+                          <>
+                            <button
+                              onClick={() => handleEditClient(c._id)}
+                              className="btn btn-outline btn-icon"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="btn btn-ghost btn-icon"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => navigate(`/admin/clients/${c._id}`, { state: { c } })}
+                              className="btn btn-ghost btn-icon"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              onClick={() => startEditing(c)}
+                              className="btn btn-outline btn-icon"
+                            >
+                              <Pen size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClient(c._id)}
+                              className="btn btn-danger btn-icon"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -277,10 +269,10 @@ const AdminClients: React.FC = () => {
 const formatDateTime = (dateString:string) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-  
+
     return `${year}-${month}-${day}`;
   };
-  
+
 export default AdminClients;

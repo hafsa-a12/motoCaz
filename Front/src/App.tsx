@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Publish from "./pages/Publish";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
+import Favoris from "./pages/Favoris";
 import MesAnnonces from "./pages/MesAnnonces";
 import Admin from "./pages/Admin";
 import AdminUsers from "./pages/AdminUsers";
@@ -12,7 +14,6 @@ import AdminClients from "./pages/AdminClients";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import Home from "./pages/Home";
 
-import './index.css'
 import AnnonceDetail from "./pages/AnnonceDetail";
 import AdminDashboard from "./pages/AdminAnnonces";
 import AdminClientsDetails from "./pages/AdminClientsDetails";
@@ -36,20 +37,17 @@ const ClientRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   );
 };
 
-// 🔒 Composant pour protéger les routes superadmin
+// 🔒 Composant pour protéger les routes superadmin (réservées au rôle superadmin)
 const SuperAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const role = localStorage.getItem("role") ?? null;
-  return role && (role === "admin" || role === "superadmin") ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/login" />
-  );
+  return role === "superadmin" ? <>{children}</> : <Navigate to="/login" />;
 };
 
 function App() {
   return (
     <>
       <Header />
+      <main>
       <Routes>
         {/* Routes publiques */}
         <Route path="/" element={<Home />} />
@@ -58,6 +56,7 @@ function App() {
         <Route path="/publish" element={<Publish />} />
         {/* <Route path="/mes-annonces" element={<MesAnnonces />} /> */}
         <Route path="/annonce/:id" element={<AnnonceDetail />} />
+        <Route path="/favoris" element={<Favoris />} />
 
         {/* Route client protégée */}
         <Route
@@ -102,6 +101,8 @@ function App() {
         {/* Route fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      </main>
+      <Footer />
     </>
   );
 }

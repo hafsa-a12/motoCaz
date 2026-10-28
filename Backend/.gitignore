@@ -1,4 +1,10 @@
 .env
-/node_modules
-/public/annonces
-/uploads/piecesIdentite
+node_modules/
+
+# Photos uploadées par les vendeurs (<timestamp>-<n>.jpg) : non versionnées.
+# Les photos de démonstration (noms lisibles) restent dans le dépôt.
+/public/annonces/[0-9]*
+
+# Pièces d'identité des utilisateurs : données personnelles, JAMAIS versionnées
+/uploads/*
+!/uploads/.gitkeep

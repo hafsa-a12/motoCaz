@@ -1,16 +1,28 @@
-// server.js
+// server.js — point d'entrée : vérifie la config, se connecte à MongoDB, puis lance l'API
+require('dotenv').config();
 
- const app = require('./app'); // ✅ Ton app Express est dans app.js
-const connectDB = require('./config/db'); // ✅ Connexion MongoDB centralisée
-const dotenv = require('dotenv');
+const app = require('./app');
+const connectDB = require('./config/db');
 
-dotenv.config();
+const PORT = process.env.PORT || 8000;
 
-const PORT = process.env.PORT || 3000;
+function checkEnv() {
+  const missing = ['MONGO_URL', 'JWT_SECRET'].filter((k) => !process.env[k]);
+  if (missing.length) {
+    console.error(`❌ Variable(s) manquante(s) dans .env : ${missing.join(', ')}`);
+    console.error('   → copie .env.example vers .env puis renseigne-les.');
+    process.exit(1);
+  }
+  if (process.env.JWT_SECRET.length < 16) {
+    console.error('❌ JWT_SECRET trop court (16 caractères minimum).');
+    process.exit(1);
+  }
+}
 
-// Connexion à la base, puis lancer le serveur
-connectDB();
+async function start() {
+  checkEnv();
+  await connectDB();
+  app.listen(PORT, () => console.log(`🚀 API Motocaz sur http://localhost:${PORT}`));
+}
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur http://localhost:${PORT}`);
-});
+start();
